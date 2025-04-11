@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     required: [true, "Password is required"],
     minlength: [6, "Password Must Be Atleast 6 characters"],
   },
+
+  address:{type:Object,default:{line1:'',line2:''}},
+  gender:{type:String,default:"Not Selected"},
+  dob:{type:String,default:"Not Selected"},
+  phone:{type:String,default:"000000000"},
 });
 
 const User = mongoose.model("User", userSchema);

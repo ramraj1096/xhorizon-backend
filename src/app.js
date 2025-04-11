@@ -9,7 +9,8 @@ import cookieParser from "cookie-parser";
 const app = express();
 dotenv.config();
 
-const MONGODB_URL = process.env.MONGODB_URL;
+const MONGODB_URL = "mongodb+srv://bandikarthik75:CWYFeZTCRe0sZgRQ@cluster0.aeqdj.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+
 
 //middlewares
 app.use(express.json());

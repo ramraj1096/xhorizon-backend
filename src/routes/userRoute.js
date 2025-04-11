@@ -6,6 +6,7 @@ import {
 } from "../middlewares/userValidations.js";
 import handleValidationErrors from "../middlewares/handleValidationErrors.js";
 import {
+  getProfile,
   loginUser,
   logout,
   me,
@@ -34,10 +35,12 @@ router.post(
   resetPassword
 );
 
-router.put("/update-user", authenticateUser, upload.single("file"), updateUser);
+router.put("/update-user", authenticateUser, upload.single("image"), updateUser);
 
-router.get("/me", authenticateUser, me);
+router.get("/get-profile", authenticateUser, getProfile);
 
 router.post("/logout", logout);
+
+router.get("/get-profile",authenticateUser,getProfile);
 
 export default router;

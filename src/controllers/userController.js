@@ -28,15 +28,15 @@ export const registerUser = async (req, res) => {
 
     await newUser.save();
 
-    // await sendEmail(
-    //   {
-    //     name: name,
-    //     email: email,
-    //     otp: "",
-    //     useCase: "registerSuccessfull",
-    //   },
-    //   res
-    // );
+    await sendEmail(
+      {
+        name: name,
+        email: email,
+        otp: "",
+        useCase: "registerSuccessfull",
+      },
+      res
+    );
 
     return res.status(201).json({
       success: true,
@@ -155,36 +155,47 @@ export const logout = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const { name, email } = req.body;
-  if (!email) {
-    return res.status(400).json({
-      success: false,
-      message: "Email is required",
-    });
-  }
-  const isUserExists = await User.findOne({ email });
+  const id=req.userId;
+  const { name, phone, address, dob, gender } = req.body;
+ 
 
-  if (!isUserExists) {
-    return res.status(404).json({
-      success: false,
-      message: "User not found",
-    });
+  if (!name || !phone || !address || !dob || !gender) {
+    return res.status(400).json({ success: false, message: 'All fields are required' });
   }
+  const parsedAddress = JSON.parse(address); 
+  await User.findByIdAndUpdate(id, { name, phone, address: parsedAddress, dob, gender });
+  const imageFile = req.file;
+  const userdetails=await User.findById(id);
 
-  if (req.file) {
-    isUserExists.image = (await uploadImage(req.file)) || isUserExists.image;
+  if (imageFile) {
+    userdetails.image = (await uploadImage(req.file)) || userdetails.image;
+    await userdetails.save();
   }
 
-  if (name) isUserExists.name = name || isUserExists.name;
-
-  await isUserExists.save();
 
   return res.status(200).json({
     success: true,
     message: "User updated successfully",
-    user: isUserExists,
+    user: userdetails,
   });
 };
+
+export const getProfile=async (req,res)=>{
+  try{
+     const id=req.userId;
+     const userdata=await User.findById(id).select("-password");
+     if(!userdata)
+     {
+      return res.json({success:false,message:"User Not Found"});
+     }
+     return res.json({success:true,user:userdata})
+  }
+  catch(error)
+  {
+    console.log("Error While Fetching The User Profile:", error);
+    res.json({success:false,message:"Error While Fetching The User Profile"});
+  }
+}
 
 export const me = async (req, res) => {
   res.status(200).json({

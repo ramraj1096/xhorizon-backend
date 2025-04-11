@@ -67,17 +67,8 @@ export const sendEmail = async (req, res) => {
       html: htmlTemplate,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
-      if (error) {
-        return res.status(500).json({
-          success: false,
-          message: error.message,
-        });
-      }
-
-      console.log("Message sent: %s", info.messageId);
-      console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
-    });
+    await transporter.sendMail(mailOptions);
+    return true;
   } catch (error) {
     console.log(error);
     return res.status(500).json({
@@ -132,10 +123,6 @@ export const sendOtp = async (req, res) => {
       message: "OTP sent successfully",
     });
 
-    return res.status(500).json({
-      success: false,
-      message: err.message,
-    });
   } catch (error) {
     console.log(error);
 
