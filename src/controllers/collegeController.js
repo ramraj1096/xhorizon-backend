@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { uploadFile } from "../utils/uploadFile.js";
 import { generateToken } from "../middlewares/auth.js";
 
-// 🏫 Register College
+//  Register College
 export const registerCollege = async (req, res) => {
   try {
     const { name, email, password } = req.body;

@@ -4,6 +4,22 @@ import Faculty from "../models/FacultySchema.js";
 import { uploadFile } from "../utils/uploadFile.js";
 import bcrypt from "bcrypt";
 
+export const adminlogin=async (req,res)=>{
+  try{
+    const {email,password}=req.body;
+    console.log(req.body);
+    if(email==="xhorizonadmin@gmail.com" && password==="qwerty123")
+    {
+      res.json({success:true,message:"Login Successful",token:"Admin Token"});
+    }
+  }
+  catch(error)
+  {
+    console.error("Error While Logging The Admin");
+    res.json({success:false,message:"Error While Logging The admin"});
+  }
+}
+
 export const addFaculty = async (req, res) => {
   try {
     const { name, email, password, subject, description, experience, college } =

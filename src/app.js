@@ -25,9 +25,11 @@ const MONGODB_URL =
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+
+const routes = ["http://localhost:5174", "http://localhost:5173"]
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: routes,
     credentials: true,
   })
 );
