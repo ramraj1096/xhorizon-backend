@@ -51,24 +51,38 @@ export const registerStudent = async (req, res) => {
     });
   }
 };
-
 export const loginStudent = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const isStudentExists = await Student.findOne({ email });
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
 
-    if (!isStudentExists) {
+    const student = await Student.findOne({ email });
+
+    if (!student) {
       return res.status(401).json({
         success: false,
         message: "Student not found",
       });
     }
 
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      isStudentExists.password
-    );
+    // DEBUG LOGGING TO IDENTIFY ISSUE
+    console.log("Received password from body:", password);
+    console.log("Password from DB:", student.password);
+
+    if (!student.password) {
+      return res.status(400).json({
+        success: false,
+        message: "Password not set for this account",
+      });
+    }
+
+    const isPasswordCorrect = await bcrypt.compare(password, student.password);
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
@@ -78,8 +92,8 @@ export const loginStudent = async (req, res) => {
     }
 
     const token = generateToken({
-      studentId: isStudentExists.id,
-      email: isStudentExists.email,
+      studentId: student.id,
+      email: student.email,
     });
 
     res.setHeader("Authorization", `Bearer ${token}`);
@@ -90,16 +104,15 @@ export const loginStudent = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Welcome back ${isStudentExists.name}`,
-      student: isStudentExists,
-      token: token,
+      message: `Welcome back ${student.name}`,
+      student,
+      token,
     });
   } catch (error) {
-    console.log(error);
-
+    console.error("Login Error:", error);
     return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Something went wrong",
     });
   }
 };
@@ -155,7 +168,7 @@ export const logout = async (req, res) => {
 };
 
 export const updateStudent = async (req, res) => {
-  const id = req.userId;
+  const id = req.studentId;
   const {
     name,
     phone,
@@ -209,7 +222,7 @@ export const updateStudent = async (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
-    const id = req.userId;
+    const id = req.studentId;
     const studentData = await Student.findById(id).select("-password");
     if (!studentData) {
       return res.json({ success: false, message: "Student not found" });
