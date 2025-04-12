@@ -24,6 +24,7 @@ export const verifyToken = (token) => {
 
 export const authenticateUser = (req, res, next) => {
   const token = req.cookies.auth_token;
+  console.log(token);
 
   if (!token) {
     return res.status(401).json({ message: "No token, access denied" });
@@ -31,7 +32,8 @@ export const authenticateUser = (req, res, next) => {
 
   try {
     const decoded = verifyToken(token);
-    req.userId = decoded.userId;
+    req.studentId = decoded.studentId;
+    console.log(decoded);
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });
