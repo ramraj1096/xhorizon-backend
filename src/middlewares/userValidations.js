@@ -55,12 +55,4 @@ export const resetPasswordValidations = [
     .withMessage("Password must be at least 6 characters long"),
 ];
 
-export const userUpdateValidations = [
-  body("email")
-    .trim()
-    .notEmpty()
-    .withMessage("Email is required")
-    .isEmail()
-    .withMessage("Please enter a valid email")
-    .normalizeEmail(),
-];
+export const userUpdateValidations = [];

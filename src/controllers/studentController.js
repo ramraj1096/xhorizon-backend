@@ -169,55 +169,59 @@ export const logout = async (req, res) => {
 
 export const updateStudent = async (req, res) => {
   const id = req.studentId;
-  const {
-    name,
-    phone,
-    address,
-    dob,
-    gender,
-    skills,
-    achievements,
-    projects,
-    certifications,
-    languages,
-  } = req.body;
 
-  if (!name || !phone || !address || !dob || !gender) {
-    return res
-      .status(400)
-      .json({ success: false, message: "All fields are required" });
+  try {
+    const parsedData = {
+      name: req.body.name,
+      phone: req.body.phone,
+      dob: req.body.dob,
+      gender: req.body.gender,
+      address: JSON.parse(req.body.address || "{}"),
+      skills: JSON.parse(req.body.skills || "[]"),
+      achievements: JSON.parse(req.body.achievements || "[]"),
+      projects: JSON.parse(req.body.projects || "[]"),
+      certifications: JSON.parse(req.body.certifications || "[]"),
+      languages: JSON.parse(req.body.languages || "[]"),
+      branch: req.body.branch,
+      semester: req.body.semester,
+      resumeUrl: req.body.resumeUrl,
+    };
+
+    if (
+      !parsedData.name ||
+      !parsedData.phone ||
+      !parsedData.address ||
+      !parsedData.dob ||
+      !parsedData.gender
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "All required fields must be filled",
+      });
+    }
+
+    await Student.findByIdAndUpdate(id, parsedData);
+
+    const file = req.file;
+    const isPDF = file?.mimetype === "application/pdf";
+    const studentDetails = await Student.findById(id);
+
+    if (file) {
+      studentDetails.image =
+        (await uploadFile(file, isPDF ? "raw" : "image")) ||
+        studentDetails.image;
+      await studentDetails.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Student updated successfully",
+      student: studentDetails,
+    });
+  } catch (error) {
+    console.error("Error updating student:", error);
+    res.status(500).json({ success: false, message: "Something went wrong" });
   }
-
-  const parsedAddress = JSON.parse(address);
-
-  await Student.findByIdAndUpdate(id, {
-    name,
-    phone,
-    address: parsedAddress,
-    dob,
-    gender,
-    skills,
-    achievements,
-    projects,
-    certifications,
-    languages,
-  });
-
-  const imageFile = req.file;
-  const isPDF = file.mimetype === "application/pdf";
-  const studentDetails = await Student.findById(id);
-
-  if (imageFile) {
-    studentDetails.image =
-      uploadFile(file, isPDF ? "raw" : "image") || studentDetails.image;
-    await studentDetails.save();
-  }
-
-  return res.status(200).json({
-    success: true,
-    message: "Student updated successfully",
-    student: studentDetails,
-  });
 };
 
 export const getProfile = async (req, res) => {
