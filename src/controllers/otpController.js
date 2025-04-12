@@ -7,7 +7,7 @@ import {
   WELCOME_EMAIL_TEMPLATE,
 } from "../utils/emailTemplates.js";
 import { transporter } from "../configurations/nodeMailerConfig.js";
-import User from "../models/userSchema.js";
+import User from "../models/studentSchema.js";
 
 //cache to store otp's
 const otpCache = new NodeCache({ stdTTL: 300 });
@@ -122,7 +122,6 @@ export const sendOtp = async (req, res) => {
       otpInfo: otp,
       message: "OTP sent successfully",
     });
-
   } catch (error) {
     console.log(error);
 

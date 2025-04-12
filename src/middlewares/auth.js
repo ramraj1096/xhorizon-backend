@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 
-const JWT_SECRET ="xhorizon";
+const JWT_SECRET = "xhorizon";
 
 if (!JWT_SECRET) {
   throw new Error("JWT_SECRET is not defined in environment variables");
@@ -32,6 +32,39 @@ export const authenticateUser = (req, res, next) => {
   try {
     const decoded = verifyToken(token);
     req.userId = decoded.userId;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
+export const authenticateCollege = (req, res, next) => {
+  const token = req.cookies.college_token;
+
+  if (!token) {
+    return res.status(401).json({ message: "No token, access denied" });
+  }
+
+  try {
+    const decoded = verifyToken(token);
+    req.collegeId = decoded.collegeId;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid or expired token" });
+  }
+};
+
+export const authentiFaculty = (req, res, next) => {
+  const token = req.cookies.faculty_token;
+
+  if (!token) {
+    return res.status(401).json({ message: "No token, access denied" });
+  }
+
+  try {
+    const decoded = verifyToken(token);
+    req.facultyId = decoded.facultyId;
+    req.facultyEmail = decoded.email;
     next();
   } catch (err) {
     return res.status(401).json({ message: "Invalid or expired token" });

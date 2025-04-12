@@ -1,32 +1,32 @@
 import bcrypt from "bcrypt";
-import User from "../models/userSchema.js";
+import Student from "../models/studentSchema.js";
 import { sendEmail } from "./otpController.js";
 import { generateToken } from "../middlewares/auth.js";
-import { uploadImage } from "../utils/uploadImage.js";
+import { uploadFile } from "../utils/uploadFile.js";
 
-export const registerUser = async (req, res) => {
+export const registerStudent = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const isUserExists = await User.findOne({ email });
+    const isStudentExists = await Student.findOne({ email });
 
-    if (isUserExists) {
+    if (isStudentExists) {
       return res.status(409).json({
         success: false,
-        message: "User already Exists",
+        message: "Student already exists",
       });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const newUser = await User.create({
+    const newStudent = await Student.create({
       name,
       email,
       password: hashedPassword,
     });
 
-    await newUser.save();
+    await newStudent.save();
 
     await sendEmail(
       {
@@ -40,8 +40,8 @@ export const registerUser = async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: "User created successfully",
-      user: newUser,
+      message: "Student created successfully",
+      student: newStudent,
     });
   } catch (error) {
     console.log(error);
@@ -52,34 +52,34 @@ export const registerUser = async (req, res) => {
   }
 };
 
-export const loginUser = async (req, res) => {
+export const loginStudent = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const isUserExists = await User.findOne({ email });
+    const isStudentExists = await Student.findOne({ email });
 
-    if (!isUserExists) {
+    if (!isStudentExists) {
       return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: "Student not found",
       });
     }
 
     const isPasswordCorrect = await bcrypt.compare(
       password,
-      isUserExists.password
+      isStudentExists.password
     );
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
         success: false,
-        message: "Incorrect Credentials",
+        message: "Incorrect credentials",
       });
     }
 
     const token = generateToken({
-      userId: isUserExists.id,
-      email: isUserExists.email,
+      studentId: isStudentExists.id,
+      email: isStudentExists.email,
     });
 
     res.setHeader("Authorization", `Bearer ${token}`);
@@ -90,8 +90,8 @@ export const loginUser = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Welcome back ${isUserExists.name}`,
-      user: isUserExists,
+      message: `Welcome back ${isStudentExists.name}`,
+      student: isStudentExists,
       token: token,
     });
   } catch (error) {
@@ -108,20 +108,20 @@ export const resetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const isUserExists = await User.findOne({ email });
+    const isStudentExists = await Student.findOne({ email });
 
-    if (!isUserExists) {
+    if (!isStudentExists) {
       return res.status(401).json({
         success: false,
-        message: "User not found",
+        message: "Student not found",
       });
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    isUserExists.password = hashedPassword;
-    await isUserExists.save();
+    isStudentExists.password = hashedPassword;
+    await isStudentExists.save();
 
     await sendEmail(
       {
@@ -154,52 +154,79 @@ export const logout = async (req, res) => {
   res.status(200).json({ message: "Logged out successfully" });
 };
 
-export const updateUser = async (req, res) => {
-  const id=req.userId;
-  const { name, phone, address, dob, gender } = req.body;
- 
+export const updateStudent = async (req, res) => {
+  const id = req.userId;
+  const {
+    name,
+    phone,
+    address,
+    dob,
+    gender,
+    skills,
+    achievements,
+    projects,
+    certifications,
+    languages,
+  } = req.body;
 
   if (!name || !phone || !address || !dob || !gender) {
-    return res.status(400).json({ success: false, message: 'All fields are required' });
+    return res
+      .status(400)
+      .json({ success: false, message: "All fields are required" });
   }
-  const parsedAddress = JSON.parse(address); 
-  await User.findByIdAndUpdate(id, { name, phone, address: parsedAddress, dob, gender });
+
+  const parsedAddress = JSON.parse(address);
+
+  await Student.findByIdAndUpdate(id, {
+    name,
+    phone,
+    address: parsedAddress,
+    dob,
+    gender,
+    skills,
+    achievements,
+    projects,
+    certifications,
+    languages,
+  });
+
   const imageFile = req.file;
-  const userdetails=await User.findById(id);
+  const isPDF = file.mimetype === "application/pdf";
+  const studentDetails = await Student.findById(id);
 
   if (imageFile) {
-    userdetails.image = (await uploadImage(req.file)) || userdetails.image;
-    await userdetails.save();
+    studentDetails.image =
+      uploadFile(file, isPDF ? "raw" : "image") || studentDetails.image;
+    await studentDetails.save();
   }
-
 
   return res.status(200).json({
     success: true,
-    message: "User updated successfully",
-    user: userdetails,
+    message: "Student updated successfully",
+    student: studentDetails,
   });
 };
 
-export const getProfile=async (req,res)=>{
-  try{
-     const id=req.userId;
-     const userdata=await User.findById(id).select("-password");
-     if(!userdata)
-     {
-      return res.json({success:false,message:"User Not Found"});
-     }
-     return res.json({success:true,user:userdata})
+export const getProfile = async (req, res) => {
+  try {
+    const id = req.userId;
+    const studentData = await Student.findById(id).select("-password");
+    if (!studentData) {
+      return res.json({ success: false, message: "Student not found" });
+    }
+    return res.json({ success: true, student: studentData });
+  } catch (error) {
+    console.log("Error while fetching the student profile:", error);
+    res.json({
+      success: false,
+      message: "Error while fetching the student profile",
+    });
   }
-  catch(error)
-  {
-    console.log("Error While Fetching The User Profile:", error);
-    res.json({success:false,message:"Error While Fetching The User Profile"});
-  }
-}
+};
 
 export const me = async (req, res) => {
   res.status(200).json({
     success: true,
-    user: req.user,
+    student: req.student,
   });
 };
