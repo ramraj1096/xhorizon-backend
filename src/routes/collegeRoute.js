@@ -15,9 +15,11 @@ import {
 } from "../middlewares/collegeValidations.js";
 import handleValidationErrors from "../middlewares/handleValidationErrors.js";
 import { authenticateCollege } from "../middlewares/auth.js";
+import { adminlogin } from "../controllers/facultyController.js";
 
 const router = express.Router();
 
+router.post('/admin-login',adminlogin);
 router.post(
   "/register",
   registerCollegeValidator,

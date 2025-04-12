@@ -31,6 +31,8 @@ router.post(
 // POST /api/faculty/login
 router.post("/login", loginFaculty);
 
+router.get("/:collegeId", getAllFacultyByCollege)
+
 // GET /api/faculty/:id
 router.get("/:id", getFaculty);
 

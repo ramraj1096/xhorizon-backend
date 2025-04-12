@@ -37,7 +37,6 @@ export const addFacultyValidation = [
   body("college")
     .notEmpty()
     .withMessage("College ID is required")
-    .isMongoId()
     .withMessage("Invalid college ID"),
 ];
 
